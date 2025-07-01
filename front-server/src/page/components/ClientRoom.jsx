@@ -1,139 +1,156 @@
-import React, { useEffect, useRef, useState } from 'react';
-import io from 'socket.io-client';
-import ScreenShareBox from './ScreenShareBox';
-import ChatBox from './rtc/ChatBox';
-import './ClientRoomUI.scss';
+import React, { useEffect, useRef, useState } from 'react'
+import io from 'socket.io-client'
 
 const ClientRoom = () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const room = urlParams.get('room');
-  const nickname = urlParams.get('name');
+  const urlParams = new URLSearchParams(window.location.search)
+  const room = urlParams.get('room')
+  const nickname = urlParams.get('name')
 
-  const [peers, setPeers] = useState([]);
-  const [status, setStatus] = useState({});
-  const [socket, setSocket] = useState(null);
-  const [screenStream, setScreenStream] = useState(null);
+  const [peers, setPeers] = useState([])
+  const [status, setStatus] = useState({})
+  const [socket, setSocket] = useState(null)
+  const [screenStream, setScreenStream] = useState(null)
 
-  const myVideo = useRef();
-  const myStream = useRef();
-  const peerVideos = useRef({});
-  const peerConnections = useRef({});
+  const myVideo = useRef()
+  const myStream = useRef()
+  const peerVideos = useRef({})
+  const peerConnections = useRef({})
 
   useEffect(() => {
     if (!room || !nickname) {
-      alert('잘못된 접근입니다.');
-      window.location.href = '/';
-      return;
+      alert('잘못된 접근입니다.')
+      window.location.href = '/'
+      return
     }
 
-    const s = io();
-    setSocket(s);
+    const s = io()
+    setSocket(s)
 
-    s.emit('join', { roomId: room, nickname });
+    s.emit('join', { roomId: room, nickname })
 
     s.on('room-full', () => {
-      alert('입장 인원 초과');
-      window.location.href = '/';
-    });
+      alert('입장 인원 초과')
+      window.location.href = '/'
+    })
 
     s.on('peer-list', (peerList) => {
-      setPeers(peerList);
-    });
+      setPeers(peerList)
+    })
 
     s.on('rtc-message', async (msg) => {
-      const { from, event, data } = JSON.parse(msg);
-      const pc = peerConnections.current[from] || (await createPeerConnection(from));
+      const { from, event, data } = JSON.parse(msg)
+      const pc = peerConnections.current[from] || (await createPeerConnection(from))
 
-      if (event === 'offer') {
-        await pc.setRemoteDescription(data);
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        sendSignal('answer', answer, from);
-      } else if (event === 'answer') {
-        await pc.setRemoteDescription(data);
-      } else if (event === 'candidate') {
-        await pc.addIceCandidate(data);
-      } else if (event === 'status') {
-        setStatus((prev) => ({ ...prev, [from]: data }));
+      try {
+        if (event === 'offer') {
+          await pc.setRemoteDescription(new RTCSessionDescription(data))
+          const answer = await pc.createAnswer()
+          await pc.setLocalDescription(answer)
+          sendSignal('answer', answer, from)
+        } else if (event === 'answer') {
+          await pc.setRemoteDescription(new RTCSessionDescription(data))
+        } else if (event === 'candidate') {
+          await pc.addIceCandidate(new RTCIceCandidate(data))
+        } else if (event === 'status') {
+          setStatus((prev) => ({ ...prev, [from]: data }))
+        }
+      } catch (err) {
+        console.error(`[RTC ${event}] 처리 중 오류:`, err)
       }
-    });
+    })
 
     s.on('peer-left', (peerId) => {
-      delete peerConnections.current[peerId];
-      delete peerVideos.current[peerId];
-      setPeers((prev) => prev.filter((p) => p.id !== peerId));
-    });
+      if (peerConnections.current[peerId]) {
+        peerConnections.current[peerId].close()
+        delete peerConnections.current[peerId]
+      }
+      delete peerVideos.current[peerId]
+      setPeers((prev) => prev.filter((p) => p.id !== peerId))
+    })
 
     initMedia().then(() => {
-      s.emit('ready', { roomId: room });
-    });
+      s.emit('ready', { roomId: room })
+    })
 
-    return () => s.disconnect();
-  }, []);
+    return () => s.disconnect()
+  }, [])
 
   const initMedia = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-    myStream.current = stream;
-    if (myVideo.current) myVideo.current.srcObject = stream;
-  };
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+      myStream.current = stream
+      if (myVideo.current) myVideo.current.srcObject = stream
+    } catch (err) {
+      alert('카메라/마이크 권한을 허용해주세요.')
+      console.error('getUserMedia 오류:', err)
+    }
+  }
 
   const createPeerConnection = async (peerId) => {
     const pc = new RTCPeerConnection({
       iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-    });
+    })
 
-    peerConnections.current[peerId] = pc;
+    peerConnections.current[peerId] = pc
 
     pc.onicecandidate = (e) => {
-      if (e.candidate) sendSignal('candidate', e.candidate, peerId);
-    };
+      if (e.candidate) sendSignal('candidate', e.candidate, peerId)
+    }
 
     pc.ontrack = (e) => {
-      const video = peerVideos.current[peerId];
-      if (video) video.srcObject = e.streams[0];
-    };
+      const stream = e.streams[0]
+      if (stream) {
+        const video = peerVideos.current[peerId]
+        if (video) {
+          video.srcObject = stream
+        }
+      }
+    }
 
-    myStream.current.getTracks().forEach((track) => pc.addTrack(track, myStream.current));
+    myStream.current?.getTracks().forEach((track) => {
+      pc.addTrack(track, myStream.current)
+    })
 
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    sendSignal('offer', offer, peerId);
-    return pc;
-  };
+    const offer = await pc.createOffer()
+    await pc.setLocalDescription(offer)
+    sendSignal('offer', offer, peerId)
+
+    return pc
+  }
 
   const sendSignal = (event, data, to) => {
-    socket.emit('rtc-message', JSON.stringify({ roomId: room, event, data, to }));
-  };
+    socket?.emit('rtc-message', JSON.stringify({ roomId: room, event, data, to }))
+  }
 
   const toggleCamera = () => {
-    const track = myStream.current?.getVideoTracks()[0];
+    const track = myStream.current?.getVideoTracks()[0]
     if (track) {
-      track.enabled = !track.enabled;
-      notifyStatus();
+      track.enabled = !track.enabled
+      notifyStatus()
     }
-  };
+  }
 
   const toggleMic = () => {
-    const track = myStream.current?.getAudioTracks()[0];
+    const track = myStream.current?.getAudioTracks()[0]
     if (track) {
-      track.enabled = !track.enabled;
-      notifyStatus();
+      track.enabled = !track.enabled
+      notifyStatus()
     }
-  };
+  }
 
   const notifyStatus = () => {
     const data = {
       camera: myStream.current?.getVideoTracks()[0]?.enabled,
       mic: myStream.current?.getAudioTracks()[0]?.enabled,
-    };
-    peers.forEach(({ id }) => sendSignal('status', data, id));
-  };
+    }
+    peers.forEach(({ id }) => sendSignal('status', data, id))
+  }
 
   const leaveRoom = () => {
-    Object.values(peerConnections.current).forEach((pc) => pc.close());
-    socket?.disconnect();
-    window.location.href = '/';
-  };
+    Object.values(peerConnections.current).forEach((pc) => pc.close())
+    socket?.disconnect()
+    window.location.href = '/'
+  }
 
   return (
     <div className="client-room-wrapper">
@@ -170,7 +187,7 @@ const ClientRoom = () => {
 
       <ChatBox socket={socket} nickname={nickname} />
     </div>
-  );
-};
+  )
+}
 
-export default ClientRoom;
+export default ClientRoom
