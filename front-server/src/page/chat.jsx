@@ -1,18 +1,19 @@
-import { useState, useEffect, useRef } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import React,{ useState, useEffect, useRef } from 'react';
+import { useLocation, useParams,useNavigate  } from 'react-router-dom';
 import Header from '@common/Header';
 import Layer from '@common/Layer';
 import Roulette from '@components/chat/Roulette';
 import ResultModal from '@components/chat/ResultModal';
 import TodoList from '@components/chat/TodoListDeployment';
-import Video from '@components/Video';
 import { useStudySocket } from '@dev/hooks/useSocket';
 import { chatAPI, userAPI } from '@dev/services/apiService';
 import AttachmentList from '@components/chat/AttachmentList';
 
+
 function Chat() {
 	const location = useLocation();
 	const params = useParams();
+	const navigate = useNavigate()
 	const studyInfo = location.state?.studyRoom || location.state;
 	
 	// URL query string에서 정보 추출
@@ -457,6 +458,15 @@ function Chat() {
 		}]);
 	};
 
+	const handleStartVideo = () => {
+		const finalRoomId = roomId || studyId || `room-${Date.now()}`
+	navigate(`/video/${finalRoomId}`, {
+		state: {
+		userNickname: currentUserInfo?.nickname || '익명'
+		}
+	})
+	}
+
 	// 내가 보낼 메시지
 	const handleSend = () => {
 		if (!message.trim()) return;
@@ -850,6 +860,24 @@ function Chat() {
 				}}
 				onShowAttachments={handleShowAttachments}
 			/>
+				<button
+			onClick={handleStartVideo}
+			style={{
+			position: 'fixed',
+			bottom: '20px',
+			left: '20px',
+			zIndex: 9999,
+			backgroundColor: '#2196f3',
+			color: 'white',
+			border: 'none',
+			padding: '10px 16px',
+			borderRadius: '20px',
+			fontSize: '14px',
+			cursor: 'pointer'
+			}}
+		>
+			📷 화상 회의 시작
+		</button>
 
 			{/* 참가 신청 알림 (방장만 표시) */}
 			{/* 디버깅용 로그 */}
@@ -1157,14 +1185,6 @@ function Chat() {
 					onClose={() => setShowAttachments(false)}
 				/>
 			)}
-
-			{showVideo && 
-				<Video 
-					onClose={() => setShowVideo(false)} 
-					userNickname={currentUserInfo?.nickname || currentUserInfo?.username || currentUserInfo?.id || "익명"}
-					roomId={roomId || studyId}
-				/>
-			}
 		</>
 	);
 }

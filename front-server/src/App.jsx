@@ -8,7 +8,7 @@ import BoardList from '@page/board'
 import BoardWrite from '@components/BoardWrite'
 import List from '@page/list'
 import Search from '@page/Search'
-import ClientRoom from '@components/ClientRoom'
+import Video from '@components/Video'
 
 function App() {
 	const [showIntro, setShowIntro] = useState(false);
@@ -19,6 +19,8 @@ function App() {
 		}, 5000);
 		return () => clearTimeout(timer);
 	}, []);
+
+	const userNickname = sessionStorage.getItem("nickname") || "익명";
 
 	return (
 		<Router>
@@ -46,8 +48,8 @@ function App() {
 					<Route path="/board" element={<BoardList />} />
 					<Route path="/board/write" element={<BoardWrite />} />
 					<Route path="/search" element={<Search />} />
+					<Route path="/video/:roomId" element={<Video />} />
 
-					<Route path="/rtc-client" element={<ClientRoom />} />
 
 					<Route path="*" element={<div>404 - 페이지를 찾을 수 없습니다</div>} />
 				</Routes>
