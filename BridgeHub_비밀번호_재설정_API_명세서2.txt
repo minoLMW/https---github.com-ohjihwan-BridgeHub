@@ -1,0 +1,340 @@
+===============================================
+    BridgeHub 비밀번호 재설정 API 명세서
+===============================================
+
+작성일: 2025년 6월 29일
+버전: v1.0
+기본 URL: http://localhost:7100/api
+
+===============================================
+                목차
+===============================================
+1. 개요
+2. 비밀번호 재설정 프로세스
+3. API 엔드포인트 상세
+   3.1 비밀번호 재설정 코드 발송
+   3.2 비밀번호 재설정 완료
+4. 에러 코드 정의
+5. 보안 정책
+6. 사용 예시
+
+===============================================
+            1. 개 요
+===============================================
+
+BridgeHub 시스템의 비밀번호 재설정 기능은 사용자가 비밀번호를 
+잊어버렸을 때 안전하게 새로운 비밀번호로 변경할 수 있도록 
+지원하는 API입니다.
+
+이메일 인증을 통한 2단계 인증 과정을 거쳐 보안성을 보장합니다.
+
+===============================================
+        2. 비밀번호 재설정 프로세스
+===============================================
+
+단계 1: 비밀번호 재설정 요청
+  → 사용자가 이메일 주소 입력
+  → 시스템이 해당 사용자 존재 여부 확인
+  → 재설정 코드를 이메일로 발송 (10분간 유효)
+
+단계 2: 비밀번호 재설정 완료
+  → 사용자가 사용자명, 이메일, 재설정코드, 새 비밀번호 입력
+  → 시스템이 사용자명과 이메일 일치 여부 확인
+  → 재설정 코드 유효성 검증
+  → 새 비밀번호로 변경 (bcrypt 암호화)
+
+===============================================
+         3. API 엔드포인트 상세
+===============================================
+
+3.1 비밀번호 재설정 코드 발송
+-----------------------------------------------
+
+▶ 엔드포인트
+POST /api/auth/forgot-password
+
+▶ 설명
+사용자의 이메일 주소로 비밀번호 재설정 코드를 발송합니다.
+재설정 코드는 6자리 숫자로 생성되며 10분간 유효합니다.
+
+▶ 요청 헤더
+Content-Type: application/json
+
+▶ 요청 본문
+{
+    "email": "user@example.com"
+}
+
+▶ 요청 필드 설명
+- email (required): 비밀번호를 재설정할 사용자의 이메일 주소
+  * 형식: 유효한 이메일 형식
+  * 예시: "user@example.com"
+
+▶ 성공 응답 (200 OK)
+{
+    "success": true,
+    "message": "SUCCESS",
+    "data": null
+}
+
+▶ 실패 응답
+- 400 Bad Request (이메일 누락)
+{
+    "success": false,
+    "message": "EMAIL_REQUIRED",
+    "data": null
+}
+
+- 400 Bad Request (사용자 없음)
+{
+    "success": false,
+    "message": "USER_NOT_FOUND",
+    "data": null
+}
+
+- 400 Bad Request (이메일 발송 실패)
+{
+    "success": false,
+    "message": "PASSWORD_RESET_SEND_ERROR",
+    "data": null
+}
+
+▶ 발송되는 이메일 내용
+제목: [TheBridgeHub] 비밀번호 재설정 코드
+내용: 
+"안녕하세요!
+
+TheBridgeHub 비밀번호 재설정 코드입니다.
+
+재설정 코드: 123456
+
+이 코드는 10분간 유효합니다.
+만약 비밀번호 재설정을 요청하지 않으셨다면 이 메일을 무시해주세요.
+
+감사합니다."
+
+-----------------------------------------------
+
+3.2 비밀번호 재설정 완료
+-----------------------------------------------
+
+▶ 엔드포인트
+POST /api/auth/reset-password
+
+▶ 설명
+사용자명, 이메일, 재설정 코드를 검증한 후 새로운 비밀번호로 
+변경합니다. 모든 정보가 일치해야만 비밀번호 변경이 가능합니다.
+
+▶ 요청 헤더
+Content-Type: application/json
+
+▶ 요청 본문
+{
+    "username": "user@example.com",
+    "email": "user@example.com",
+    "resetCode": "123456",
+    "newPassword": "newPassword123!"
+}
+
+▶ 요청 필드 설명
+- username (required): 사용자명 (시스템에서는 이메일과 동일)
+  * 형식: 유효한 이메일 형식
+  * 예시: "user@example.com"
+
+- email (required): 사용자의 이메일 주소
+  * 형식: 유효한 이메일 형식
+  * username과 반드시 일치해야 함
+  * 예시: "user@example.com"
+
+- resetCode (required): 이메일로 받은 6자리 재설정 코드
+  * 형식: 6자리 숫자 문자열
+  * 유효시간: 10분
+  * 예시: "123456"
+
+- newPassword (required): 새로운 비밀번호
+  * 형식: 문자열 (길이 제한은 프론트엔드에서 설정)
+  * 예시: "newPassword123!"
+
+▶ 성공 응답 (200 OK)
+{
+    "success": true,
+    "message": "SUCCESS",
+    "data": null
+}
+
+▶ 실패 응답
+- 400 Bad Request (사용자명 누락)
+{
+    "success": false,
+    "message": "USERNAME_REQUIRED",
+    "data": null
+}
+
+- 400 Bad Request (이메일 누락)
+{
+    "success": false,
+    "message": "EMAIL_REQUIRED",
+    "data": null
+}
+
+- 400 Bad Request (재설정 코드 누락)
+{
+    "success": false,
+    "message": "RESET_CODE_REQUIRED",
+    "data": null
+}
+
+- 400 Bad Request (새 비밀번호 누락)
+{
+    "success": false,
+    "message": "NEW_PASSWORD_REQUIRED",
+    "data": null
+}
+
+- 400 Bad Request (비밀번호 재설정 실패)
+{
+    "success": false,
+    "message": "PASSWORD_RESET_FAILED",
+    "data": null
+}
+
+- 400 Bad Request (일반 오류)
+{
+    "success": false,
+    "message": "PASSWORD_RESET_ERROR",
+    "data": null
+}
+
+===============================================
+            4. 에러 코드 정의
+===============================================
+
+▶ 비밀번호 재설정 코드 발송 관련
+- EMAIL_REQUIRED: 이메일 주소가 입력되지 않음
+- USER_NOT_FOUND: 해당 이메일의 사용자가 존재하지 않음
+- PASSWORD_RESET_SEND_ERROR: 이메일 발송 중 오류 발생
+
+▶ 비밀번호 재설정 완료 관련
+- USERNAME_REQUIRED: 사용자명이 입력되지 않음
+- EMAIL_REQUIRED: 이메일 주소가 입력되지 않음
+- RESET_CODE_REQUIRED: 재설정 코드가 입력되지 않음
+- NEW_PASSWORD_REQUIRED: 새 비밀번호가 입력되지 않음
+- PASSWORD_RESET_FAILED: 비밀번호 재설정 처리 실패
+  (사용자명-이메일 불일치, 코드 만료/불일치 등)
+- PASSWORD_RESET_ERROR: 시스템 오류
+
+===============================================
+            5. 보안 정책
+===============================================
+
+▶ 코드 유효시간
+- 재설정 코드: 10분 (600초)
+- 만료된 코드는 자동으로 무효화됨
+
+▶ 코드 생성
+- 6자리 무작위 숫자 (000000 ~ 999999)
+- 암호학적으로 안전한 난수 생성기 사용
+
+▶ 사용자 검증
+- 사용자명과 이메일 주소 일치 여부 확인
+- 존재하지 않는 사용자에 대한 요청 차단
+
+▶ 비밀번호 암호화
+- bcrypt 해시 알고리즘 사용
+- 솔트 포함하여 안전하게 저장
+
+▶ 로그 기록
+- 모든 비밀번호 재설정 시도 로깅
+- 실패 원인 상세 기록
+- 보안 감사 추적 가능
+
+===============================================
+            6. 사용 예시
+===============================================
+
+6.1 JavaScript/Frontend 사용 예시
+-----------------------------------------------
+
+// API 서비스 import
+import { passwordResetAPI } from './services/apiService.js';
+
+// 1단계: 비밀번호 재설정 코드 요청
+async function requestPasswordReset() {
+    try {
+        const response = await passwordResetAPI.sendResetCode('user@example.com');
+        console.log('재설정 코드가 이메일로 발송되었습니다.');
+    } catch (error) {
+        console.error('코드 발송 실패:', error.response.data.message);
+    }
+}
+
+// 2단계: 비밀번호 재설정 완료
+async function resetPassword() {
+    try {
+        const response = await passwordResetAPI.resetPassword(
+            'user@example.com',  // username
+            'user@example.com',  // email
+            '123456',            // resetCode
+            'newPassword123!'    // newPassword
+        );
+        console.log('비밀번호가 성공적으로 변경되었습니다.');
+    } catch (error) {
+        console.error('비밀번호 재설정 실패:', error.response.data.message);
+    }
+}
+
+6.2 cURL 사용 예시
+-----------------------------------------------
+
+# 1단계: 비밀번호 재설정 코드 요청
+curl -X POST http://localhost:7100/api/auth/forgot-password \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com"}'
+
+# 2단계: 비밀번호 재설정 완료
+curl -X POST http://localhost:7100/api/auth/reset-password \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username":"user@example.com",
+    "email":"user@example.com",
+    "resetCode":"123456",
+    "newPassword":"newPassword123!"
+  }'
+
+6.3 테스트 시나리오
+-----------------------------------------------
+
+▶ 정상 시나리오
+1. 유효한 이메일로 재설정 코드 요청
+2. 이메일 확인 후 코드 복사
+3. 정확한 사용자명, 이메일, 코드, 새 비밀번호로 재설정 요청
+4. 성공 응답 확인
+5. 새 비밀번호로 로그인 테스트
+
+▶ 오류 시나리오
+1. 존재하지 않는 이메일로 코드 요청 → USER_NOT_FOUND
+2. 잘못된 사용자명으로 재설정 시도 → PASSWORD_RESET_FAILED
+3. 만료된 코드로 재설정 시도 → PASSWORD_RESET_FAILED
+4. 사용자명과 이메일 불일치 → PASSWORD_RESET_FAILED
+
+===============================================
+            7. 주의사항
+===============================================
+
+▶ 개발/테스트 환경
+- 이메일 발송 실패 시 콘솔에 코드 출력됨
+- 실제 운영 환경에서는 콘솔 출력 제거 권장
+
+▶ 보안 고려사항
+- 재설정 코드는 일회용으로 사용 권장
+- 동일 이메일로 연속 요청 시 이전 코드 무효화 고려
+- 브루트 포스 공격 방지를 위한 시도 횟수 제한 고려
+
+▶ 확장 가능성
+- SMS 인증 추가 가능
+- 2FA (Two-Factor Authentication) 연동 가능
+- 비밀번호 복잡도 검증 강화 가능
+
+===============================================
+                  끝
+=============================================== 

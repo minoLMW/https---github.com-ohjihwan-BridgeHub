@@ -1,0 +1,41 @@
+{
+  "name": "bridgehub",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "vite --host 0.0.0.0 --port 7000",
+    "dev": "vite --host 0.0.0.0 --port 7000",
+    "dev:local": "VITE_API_TARGET=http://localhost:7100 vite --host 0.0.0.0 --port 7000",
+    "dev:prod": "VITE_API_TARGET=http://www.bridgehub.asia vite --host 0.0.0.0 --port 7000",
+    "build": "vite build",
+    "build:local": "VITE_API_TARGET=http://localhost:7100 vite build",
+    "build:prod": "VITE_API_TARGET=http://www.bridgehub.asia vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "clean": "rimraf node_modules/.vite"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "mediasoup-client": "^3.12.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.2",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "swiper": "^11.2.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.25.0",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^4.4.1",
+    "eslint": "^9.25.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "rimraf": "^6.0.1",
+    "sass": "^1.89.1",
+    "vite": "^6.3.5"
+  }
+}

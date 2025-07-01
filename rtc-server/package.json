@@ -1,0 +1,21 @@
+{
+  "name": "rtc-server",
+    "version": "1.0.0",
+    "description": "WebRTC SFU + REST API + socket signaling server",
+    "type": "module",
+    "scripts": {
+        "start": "node src/server.mjs",
+        "dev": "nodemon --watch src --ext mjs,json --exec \"node src/server.mjs\""
+    },
+    "dependencies": {
+        "express": "^4.18.2",
+        "socket.io": "^4.7.0",
+        "dotenv": "^16.0.0"
+    },
+    "devDependencies": {
+        "nodemon": "^3.0.0"
+    },
+    "engines": {
+        "node": ">=16"
+    }
+}

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.koreait.apiserver.dao.FileDao">
+
+    <resultMap id="FileResultMap" type="com.koreait.apiserver.entity.File">
+        <id property="fileId" column="file_id"/>
+        <result property="fileType" column="file_type"/>
+        <result property="originalFilename" column="original_filename"/>
+        <result property="storedFilename" column="stored_filename"/>
+        <result property="filePath" column="file_path"/>
+        <result property="fileSize" column="file_size"/>
+        <result property="mimeType" column="mime_type"/>
+        <result property="fileHash" column="file_hash"/>
+        <result property="isDeleted" column="is_deleted"/>
+        <result property="uploadedAt" column="uploaded_at"/>
+        <result property="messageId" column="message_id"/>
+        <result property="memberId" column="member_id"/>
+        <result property="studyRoomId" column="study_room_id"/>
+        <result property="boardId" column="board_id"/>
+    </resultMap>
+
+    <insert id="insertFile" parameterType="com.koreait.apiserver.entity.File" useGeneratedKeys="true" keyProperty="fileId">
+        INSERT INTO file (file_type, original_filename, stored_filename, file_path, file_size, mime_type, file_hash, message_id, member_id, study_room_id, board_id, uploaded_at)
+        VALUES (#{fileType}, #{originalFilename}, #{storedFilename}, #{filePath}, #{fileSize}, #{mimeType}, #{fileHash}, #{messageId}, #{memberId}, #{studyRoomId}, #{boardId}, NOW())
+    </insert>
+
+    <select id="findById" resultMap="FileResultMap">
+        SELECT * FROM file WHERE file_id = #{fileId} AND is_deleted = false
+    </select>
+
+    <select id="getFileById" resultMap="FileResultMap">
+        SELECT * FROM file WHERE file_id = #{fileId}
+    </select>
+
+    <select id="findByMessageId" resultMap="FileResultMap">
+        SELECT * FROM file WHERE message_id = #{messageId} AND is_deleted = false ORDER BY uploaded_at ASC
+    </select>
+
+    <select id="getFilesByMessageId" resultMap="FileResultMap">
+        SELECT * FROM file WHERE message_id = #{messageId} AND is_deleted = false ORDER BY uploaded_at ASC
+    </select>
+
+    <select id="findByMemberId" resultMap="FileResultMap">
+        SELECT * FROM file WHERE member_id = #{memberId} AND is_deleted = false ORDER BY uploaded_at DESC
+    </select>
+
+    <select id="getFilesByMemberId" resultMap="FileResultMap">
+        SELECT * FROM file WHERE member_id = #{memberId} AND is_deleted = false ORDER BY uploaded_at DESC
+    </select>
+
+    <select id="findByStudyroomId" resultMap="FileResultMap">
+        SELECT * FROM file WHERE study_room_id = #{studyroomId} AND is_deleted = false ORDER BY uploaded_at ASC
+    </select>
+
+    <select id="getFilesByStudyRoomId" resultMap="FileResultMap">
+        SELECT * FROM file WHERE study_room_id = #{studyRoomId} AND is_deleted = false ORDER BY uploaded_at ASC
+    </select>
+
+    <select id="findByFileType" resultMap="FileResultMap">
+        SELECT * FROM file WHERE file_type = #{fileType} AND is_deleted = false ORDER BY uploaded_at DESC
+    </select>
+
+    <select id="findByFileHash" resultMap="FileResultMap">
+        SELECT * FROM file WHERE file_hash = #{fileHash} AND is_deleted = false
+    </select>
+
+    <update id="updateFile" parameterType="com.koreait.apiserver.entity.File">
+        UPDATE file 
+        SET file_type = #{fileType},
+            original_filename = #{originalFilename}, 
+            stored_filename = #{storedFilename}, 
+            file_path = #{filePath},
+            file_size = #{fileSize}, 
+            mime_type = #{mimeType},
+            file_hash = #{fileHash},
+            message_id = #{messageId},
+            member_id = #{memberId},
+            study_room_id = #{studyRoomId},
+            is_deleted = #{isDeleted}
+        WHERE file_id = #{fileId}
+    </update>
+
+    <update id="softDeleteFile">
+        UPDATE file SET is_deleted = true WHERE file_id = #{fileId}
+    </update>
+
+    <delete id="deleteFile">
+        DELETE FROM file WHERE file_id = #{fileId}
+    </delete>
+
+    <!-- 기존 Board와의 호환성을 위한 별칭 -->
+    <select id="findByBoardId" resultMap="FileResultMap">
+        SELECT * FROM file WHERE study_room_id = #{boardId} AND is_deleted = false ORDER BY uploaded_at ASC
+    </select>
+
+    <select id="findByStoredName" resultMap="FileResultMap">
+        SELECT * FROM file WHERE stored_filename = #{storedName} AND is_deleted = false
+    </select>
+
+    <delete id="deleteByBoardId">
+        DELETE FROM file WHERE study_room_id = #{boardId}
+    </delete>
+
+    <!-- ============ 게시판 첨부파일 관련 쿼리 ============ -->
+    
+    <!-- 게시판 첨부파일 조회 -->
+    <select id="findByBoardAttachment" resultMap="FileResultMap">
+        SELECT * FROM file 
+        WHERE board_id = #{boardId} 
+        AND file_type = 'BOARD_ATTACHMENT' 
+        AND is_deleted = false 
+        ORDER BY uploaded_at ASC
+    </select>
+    
+    <!-- 게시판 첨부파일 연결 -->
+    <update id="linkToBoardAttachment">
+        UPDATE file 
+        SET board_id = #{boardId}, file_type = 'BOARD_ATTACHMENT' 
+        WHERE file_id = #{fileId}
+    </update>
+    
+    <!-- 게시판 첨부파일 연결 해제 -->
+    <update id="unlinkBoardAttachments">
+        UPDATE file 
+        SET board_id = NULL, file_type = 'TEMP' 
+        WHERE board_id = #{boardId} AND file_type = 'BOARD_ATTACHMENT'
+    </update>
+    
+    <!-- 게시판의 첨부파일 개수 조회 -->
+    <select id="countBoardAttachments" resultType="int">
+        SELECT COUNT(*) FROM file 
+        WHERE board_id = #{boardId} 
+        AND file_type = 'BOARD_ATTACHMENT' 
+        AND is_deleted = false
+    </select>
+
+</mapper> 

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.koreait.apiserver.dao.ChatRoomDao">
+
+    <resultMap id="ChatRoomResultMap" type="com.koreait.apiserver.entity.ChatRoom">
+        <id property="roomId" column="room_id"/>
+        <result property="roomName" column="room_name"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="maxMembers" column="max_members"/>
+        <result property="isActive" column="is_active"/>
+    </resultMap>
+
+    <insert id="insertChatRoom" parameterType="com.koreait.apiserver.entity.ChatRoom" useGeneratedKeys="true" keyProperty="roomId">
+        INSERT INTO ChatRoom (room_name, created_at, max_members, is_active)
+        VALUES (#{roomName}, NOW(), #{maxMembers}, #{isActive})
+    </insert>
+
+    <select id="findById" resultMap="ChatRoomResultMap">
+        SELECT * FROM ChatRoom WHERE room_id = #{roomId}
+    </select>
+
+    <select id="findAll" resultMap="ChatRoomResultMap">
+        SELECT * FROM ChatRoom ORDER BY created_at DESC
+    </select>
+
+    <update id="updateChatRoom" parameterType="com.koreait.apiserver.entity.ChatRoom">
+        UPDATE ChatRoom 
+        SET room_name = #{roomName},
+            max_members = #{maxMembers},
+            is_active = #{isActive}
+        WHERE room_id = #{roomId}
+    </update>
+
+    <delete id="deleteChatRoom">
+        DELETE FROM ChatRoom WHERE room_id = #{roomId}
+    </delete>
+
+    <select id="findByUsername" resultMap="ChatRoomResultMap">
+        SELECT c.* FROM ChatRoom c
+        INNER JOIN ChatRoomMember cm ON c.room_id = cm.room_id
+        INNER JOIN members m ON cm.member_id = m.id
+        WHERE m.userid = #{username}
+    </select>
+
+    <select id="findByBoardId" resultMap="ChatRoomResultMap">
+        SELECT c.* FROM ChatRoom c
+        INNER JOIN studyroom s ON c.room_id = s.room_id
+        WHERE s.study_room_id = #{boardId}
+    </select>
+
+</mapper> 

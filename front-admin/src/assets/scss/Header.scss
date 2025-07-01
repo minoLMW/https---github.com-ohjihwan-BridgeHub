@@ -1,0 +1,26 @@
+.header {
+  width: 100%;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(106, 108, 255, 0.06);
+  padding: 18px 32px 14px 32px;
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  border-bottom: 2px solid #f0f0ff;
+
+  h2 {
+    color: #8e8e8e;
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: 1px;
+  }
+}
+
+@media (max-width: 700px) {
+  .header {
+    padding: 10px 8px 8px 8px;
+    min-height: 38px;
+    h2 { font-size: 15px; }
+  }
+} 

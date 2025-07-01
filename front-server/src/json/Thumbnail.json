@@ -1,0 +1,43 @@
+{
+	"default": [
+		"/uploads/thumbnail/thumbnail-room1.jpg",
+		"/uploads/thumbnail/thumbnail-room2.jpg",
+		"/uploads/thumbnail/thumbnail-room3.jpg",
+		"/uploads/thumbnail/thumbnail-room4.jpg",
+		"/uploads/thumbnail/thumbnail-room5.jpg",
+		"/uploads/thumbnail/thumbnail-room6.jpg",
+		"/uploads/thumbnail/thumbnail-room7.jpg",
+		"/uploads/thumbnail/thumbnail-room8.jpg"
+	],
+	"eng": [
+		"/uploads/thumbnail/thumbnail-eng1.jpg",
+		"/uploads/thumbnail/thumbnail-eng2.jpg",
+		"/uploads/thumbnail/thumbnail-eng3.jpg",
+		"/uploads/thumbnail/thumbnail-eng4.jpg"
+	],
+	"med": [
+		"/uploads/thumbnail/thumbnail-med1.jpg",
+		"/uploads/thumbnail/thumbnail-med2.jpg",
+		"/uploads/thumbnail/thumbnail-med3.jpg",
+		"/uploads/thumbnail/thumbnail-med4.jpg"
+	],
+	"std": [
+		"/uploads/thumbnail/thumbnail-std1.jpg",
+		"/uploads/thumbnail/thumbnail-std2.jpg",
+		"/uploads/thumbnail/thumbnail-std3.jpg",
+		"/uploads/thumbnail/thumbnail-std4.jpg"
+	],
+	"ape": [
+		"/uploads/thumbnail/thumbnail-ape1.jpg",
+		"/uploads/thumbnail/thumbnail-ape2.jpg",
+		"/uploads/thumbnail/thumbnail-ape3.jpg",
+		"/uploads/thumbnail/thumbnail-ape4.jpg"
+	],
+	"ilr": [
+		"/uploads/thumbnail/thumbnail-ilr1.jpg",
+		"/uploads/thumbnail/thumbnail-ilr2.jpg",
+		"/uploads/thumbnail/thumbnail-ilr3.jpg",
+		"/uploads/thumbnail/thumbnail-ilr4.jpg",
+		"/uploads/thumbnail/thumbnail-ilr5.jpg"
+	]
+}

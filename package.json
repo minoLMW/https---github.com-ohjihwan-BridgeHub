@@ -1,0 +1,90 @@
+{
+  "name": "bridgehub",
+  "version": "1.0.0",
+  "description": "BridgeHub - 스터디 매칭 플랫폼",
+  "private": true,
+  "workspaces": [
+    "front-admin",
+    "socket-server",
+    "front-server",
+    "rtc-server"
+  ],
+  "scripts": {
+    "start": "npx concurrently \"npm run start:admin\" \"npm run start:socket\" \"npm run start:front\" \"npm run start:rtc\"",
+    "start:admin": "cd front-admin && npm dev",
+    "start:socket": "cd socket-server && npm start",
+    "start:front": "cd front-server && npm run dev",
+    "start:rtc": "cd rtc-server && npm run dev",
+    "dev": "npx concurrently \"npm run dev:admin\" \"npm run dev:socket\" \"npm run dev:front\" \"npm run dev:rtc\"",
+    "dev:admin": "cd front-admin && npm run dev",
+    "dev:socket": "cd socket-server && npm run dev",
+    "dev:front": "cd front-server && npm run dev",
+    "dev:rtc": "cd rtc-server && npm run dev",
+    "install:all": "npm install && npm run install:admin && npm run install:socket && npm run install:front && npm run install:rtc",
+    "install:admin": "cd front-admin && npm install",
+    "install:socket": "cd socket-server && npm install",
+    "install:front": "cd front-server && npm install",
+    "install:rtc": "cd rtc-server && npm install",
+    "build": "cd front-server && npm run build",
+    "test": "npx concurrently \"npm run test:admin\" \"npm run test:socket\" \"npm run test:front\" \"npm run test:rtc\"",
+    "test:admin": "cd front-admin && npm test",
+    "test:socket": "cd socket-server && npm test",
+    "test:front": "cd front-server && npm test",
+    "test:rtc": "cd rtc-server && npm test",
+    "lint": "npx concurrently \"npm run lint:admin\" \"npm run lint:socket\" \"npm run lint:front\" \"npm run lint:rtc\"",
+    "lint:admin": "cd front-admin && npm run lint",
+    "lint:socket": "cd socket-server && npm run lint",
+    "lint:front": "cd front-server && npm run lint",
+    "lint:rtc": "cd rtc-server && npm run lint",
+    "clean": "npx rimraf node_modules && npx rimraf front-admin/node_modules && npx rimraf socket-server/node_modules && npx rimraf front-server/node_modules && npx rimraf rtc-server/node_modules",
+    "clean:install": "npm run clean && npm run install:all"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@eslint/js": "^9.25.0",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^4.4.1",
+    "eslint": "^9.25.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "nodemon": "^3.0.1",
+    "sass": "^1.89.1",
+    "vite": "^6.3.5"
+  },
+  "dependencies": {
+    "axios": "^1.10.0",
+    "bcryptjs": "^3.0.2",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "dayjs": "^1.11.13",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mediasoup-client": "^3.12.1",
+    "mysql2": "^3.14.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-native-webrtc": "^124.0.5",
+    "react-router-dom": "^7.6.2",
+    "socket.io": "^4.7.2",
+    "socket.io-client": "^4.8.1",
+    "swiper": "^11.2.8"
+  },
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ohjihwan/BridgeHub.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ohjihwan/BridgeHub/issues"
+  },
+  "homepage": "https://github.com/ohjihwan/BridgeHub#readme",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

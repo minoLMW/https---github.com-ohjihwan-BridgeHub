@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.koreait.apiserver.dao.MemberDao">
+
+    <resultMap id="MemberResultMap" type="com.koreait.apiserver.entity.Member">
+        <id property="id" column="id"/>
+        <result property="userid" column="userid"/>
+        <result property="phone" column="phone"/>
+        <result property="nickname" column="nickname"/>
+        <result property="name" column="name"/>
+        <result property="password" column="password"/>
+        <result property="education" column="education"/>
+        <result property="department" column="department"/>
+        <result property="gender" column="gender"/>
+        <result property="region" column="region"/>
+        <result property="district" column="district"/>
+        <result property="time" column="time"/>
+        <result property="profileImage" column="profile_image"/>
+        <result property="status" column="status"/>
+        <result property="emailVerified" column="email_verified"/>
+        <result property="description" column="description"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <insert id="insertMember" parameterType="com.koreait.apiserver.entity.Member" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO members (userid, phone, nickname, name, password, education, department, gender, region, district, time, profile_image, status, email_verified, description, created_at, updated_at)
+        VALUES (#{userid}, #{phone}, #{nickname}, #{name}, #{password}, #{education}, #{department}, #{gender}, #{region}, #{district}, #{time}, #{profileImage}, #{status}, #{emailVerified}, #{description}, NOW(), NOW())
+    </insert>
+
+    <select id="findById" resultMap="MemberResultMap">
+        SELECT * FROM members WHERE id = #{id}
+    </select>
+
+    <select id="findByUsername" resultMap="MemberResultMap">
+        SELECT * FROM members WHERE userid = #{username}
+    </select>
+
+    <select id="findByEmail" resultMap="MemberResultMap">
+        SELECT * FROM members WHERE userid = #{email}
+    </select>
+
+    <select id="findAll" resultMap="MemberResultMap">
+        SELECT * FROM members ORDER BY created_at DESC
+    </select>
+
+    <update id="updateMember" parameterType="com.koreait.apiserver.entity.Member">
+        UPDATE members 
+        <set>
+            <if test="userid != null">userid = #{userid},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="nickname != null">nickname = #{nickname},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="password != null">password = #{password},</if>
+            <if test="education != null">education = #{education},</if>
+            <if test="department != null">department = #{department},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="region != null">region = #{region},</if>
+            <if test="district != null">district = #{district},</if>
+            <if test="time != null">time = #{time},</if>
+            <if test="profileImage != null">profile_image = #{profileImage},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="emailVerified != null">email_verified = #{emailVerified},</if>
+            <if test="description != null">description = #{description},</if>
+            updated_at = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateEmailVerification">
+        UPDATE members 
+        SET email_verified = #{emailVerified}, 
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteMember">
+        DELETE FROM members WHERE id = #{id}
+    </delete>
+
+    <select id="existsByUsername" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM members WHERE userid = #{username}
+    </select>
+
+    <select id="existsByEmail" resultType="boolean">
+        SELECT COUNT(*) > 0 FROM members WHERE userid = #{email}
+    </select>
+
+    <select id="findByDepartment" resultMap="MemberResultMap">
+        SELECT * FROM members WHERE department = #{department} AND status = 'ACTIVE'
+    </select>
+
+    <select id="findByRegion" resultMap="MemberResultMap">
+        SELECT * FROM members WHERE region = #{region} AND status = 'ACTIVE'
+    </select>
+
+    <select id="findByTime" resultMap="MemberResultMap">
+        SELECT * FROM members WHERE time = #{time} AND status = 'ACTIVE'
+    </select>
+
+    <!-- 관리자 기능 추가 -->
+    <select id="findAllWithPaging" resultMap="MemberResultMap">
+        SELECT * FROM members 
+        ORDER BY created_at DESC 
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="getTotalCount" resultType="int">
+        SELECT COUNT(*) FROM members
+    </select>
+
+   
+    <update id="updateMemberStatus">
+        UPDATE members 
+        SET status = #{status}, 
+            updated_at = NOW()
+        WHERE id = #{memberId}
+    </update>
+
+    <select id="countByGender" resultType="map">
+        SELECT gender, COUNT(*) as value FROM members GROUP BY gender
+    </select>
+    <select id="countByEducation" resultType="map">
+        SELECT education, COUNT(*) as value FROM members GROUP BY education
+    </select>
+    <select id="countByTime" resultType="map">
+        SELECT time, COUNT(*) as value FROM members GROUP BY time
+    </select>
+    <select id="countByDepartment" resultType="map">
+        SELECT department, COUNT(*) as value FROM members GROUP BY department
+    </select>
+
+    <!-- 활동 통계용 쿼리들 -->
+    <select id="getQuarterlySignups" resultType="map">
+        SELECT 
+            CONCAT('q', QUARTER(created_at)) as quarter,
+            COUNT(*) as value
+        FROM members 
+        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 2 YEAR)
+        GROUP BY QUARTER(created_at)
+        ORDER BY quarter
+    </select>
+
+    <select id="getQuarterlyVisitors" resultType="map">
+        SELECT 
+            CONCAT('q', QUARTER(created_at)) as quarter,
+            COUNT(*) as value
+        FROM members 
+        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 2 YEAR)
+        GROUP BY QUARTER(created_at)
+        ORDER BY quarter
+    </select>
+
+    <select id="getTopActiveUsers" resultType="map">
+        SELECT 
+            m.name,
+            COUNT(mr.id) as activity
+        FROM members m
+        LEFT JOIN messages mr ON m.id = mr.member_id
+        WHERE mr.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        GROUP BY m.id, m.name
+        ORDER BY activity DESC
+        LIMIT 10
+    </select>
+
+    <select id="getPopularRooms" resultType="map">
+        SELECT 
+            sr.name,
+            COUNT(srm.member_id) as count
+        FROM study_rooms sr
+        LEFT JOIN study_room_members srm ON sr.id = srm.study_room_id
+        GROUP BY sr.id, sr.name
+        ORDER BY count DESC
+        LIMIT 10
+    </select>
+
+    <select id="getTotalVisitors" resultType="int">
+        SELECT COUNT(*) FROM members
+    </select>
+
+</mapper> 

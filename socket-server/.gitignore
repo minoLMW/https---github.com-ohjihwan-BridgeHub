@@ -1,0 +1,14 @@
+# Node.js
+node_modules/
+package-lock.json
+npm-debug.log
+debug.log
+dist/
+.env.*
+!.env
+
+# 기타
+.DS_Store
+.idea/
+.vscode/
+*.log 

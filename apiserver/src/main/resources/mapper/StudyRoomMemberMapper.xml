@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.koreait.apiserver.dao.StudyRoomMemberDao">
+
+    <!-- ResultMap 정의 -->
+    <resultMap id="StudyRoomMemberResultMap" type="com.koreait.apiserver.entity.StudyRoomMember">
+        <id property="id" column="id"/>
+        <result property="studyRoomId" column="study_room_id"/>
+        <result property="memberId" column="member_id"/>
+        <result property="role" column="role"/>
+        <result property="status" column="status"/>
+        <result property="joinedAt" column="joined_at"/>
+        <result property="approvedAt" column="approved_at"/>
+        <result property="approvedBy" column="approved_by"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <!-- 조인된 멤버 정보 -->
+        <result property="memberName" column="member_name"/>
+        <result property="memberNickname" column="member_nickname"/>
+        <result property="memberEmail" column="member_email"/>
+        <result property="memberProfileImage" column="member_profile_image"/>
+        <result property="memberDescription" column="member_description"/>
+    </resultMap>
+
+    <!-- 스터디 참가 신청 -->
+    <insert id="insertStudyRoomMember" parameterType="com.koreait.apiserver.entity.StudyRoomMember">
+        INSERT INTO study_room_members (
+            study_room_id, member_id, role, status, joined_at
+        ) VALUES (
+            #{studyRoomId}, #{memberId}, #{role}, #{status}, NOW()
+        )
+    </insert>
+
+    <!-- 스터디 멤버 조회 (멤버 정보 포함) -->
+    <select id="selectStudyRoomMembers" resultMap="StudyRoomMemberResultMap">
+        SELECT 
+            srm.*,
+            m.name as member_name,
+            m.nickname as member_nickname,
+            m.userid as member_email,
+            m.profile_image as member_profile_image,
+            m.description as member_description
+        FROM study_room_members srm
+        LEFT JOIN members m ON srm.member_id = m.id
+        WHERE srm.study_room_id = #{studyRoomId}
+        ORDER BY srm.role DESC, srm.joined_at ASC
+    </select>
+
+    <!-- 승인된 멤버만 조회 -->
+    <select id="selectApprovedMembers" resultMap="StudyRoomMemberResultMap">
+        SELECT 
+            srm.*,
+            m.name as member_name,
+            m.nickname as member_nickname,
+            m.userid as member_email,
+            m.profile_image as member_profile_image,
+            m.description as member_description
+        FROM study_room_members srm
+        LEFT JOIN members m ON srm.member_id = m.id
+        WHERE srm.study_room_id = #{studyRoomId} 
+        AND srm.status = 'APPROVED'
+        ORDER BY srm.role DESC, srm.joined_at ASC
+    </select>
+
+    <!-- 대기중인 멤버 조회 -->
+    <select id="selectPendingMembers" resultMap="StudyRoomMemberResultMap">
+        SELECT 
+            srm.*,
+            m.name as member_name,
+            m.nickname as member_nickname,
+            m.userid as member_email,
+            m.profile_image as member_profile_image,
+            m.description as member_description
+        FROM study_room_members srm
+        LEFT JOIN members m ON srm.member_id = m.id
+        WHERE srm.study_room_id = #{studyRoomId} 
+        AND srm.status = 'PENDING'
+        ORDER BY srm.joined_at ASC
+    </select>
+
+    <!-- 멤버 상태 업데이트 -->
+    <update id="updateMemberStatus">
+        UPDATE study_room_members 
+        SET status = #{status},
+            approved_at = CASE WHEN #{status} = 'APPROVED' THEN NOW() ELSE NULL END,
+            approved_by = CASE WHEN #{status} = 'APPROVED' THEN #{approvedBy} ELSE NULL END,
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 특정 멤버 조회 -->
+    <select id="selectStudyRoomMember" resultMap="StudyRoomMemberResultMap">
+        SELECT 
+            srm.*,
+            m.name as member_name,
+            m.nickname as member_nickname,
+            m.userid as member_email,
+            m.profile_image as member_profile_image,
+            m.description as member_description
+        FROM study_room_members srm
+        LEFT JOIN members m ON srm.member_id = m.id
+        WHERE srm.study_room_id = #{studyRoomId} 
+        AND srm.member_id = #{memberId}
+    </select>
+
+    <!-- 사용자의 참여 스터디 조회 -->
+    <select id="selectMemberStudyRooms" resultMap="StudyRoomMemberResultMap">
+        SELECT 
+            srm.*,
+            s.title as study_room_title
+        FROM study_room_members srm
+        LEFT JOIN studyroom s ON srm.study_room_id = s.study_room_id
+        WHERE srm.member_id = #{memberId}
+        AND srm.status = 'APPROVED'
+        ORDER BY srm.joined_at DESC
+    </select>
+
+    <!-- 스터디에서 멤버 제거 -->
+    <delete id="deleteStudyRoomMember">
+        DELETE FROM study_room_members 
+        WHERE study_room_id = #{studyRoomId} 
+        AND member_id = #{memberId}
+    </delete>
+
+    <!-- 승인된 멤버 수 조회 -->
+    <select id="countApprovedMembers" resultType="int">
+        SELECT COUNT(*) 
+        FROM study_room_members 
+        WHERE study_room_id = #{studyRoomId} 
+        AND status = 'APPROVED'
+    </select>
+
+    <!-- 방장 여부 확인 -->
+    <select id="isBoss" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM study_room_members 
+        WHERE study_room_id = #{studyRoomId} 
+        AND member_id = #{memberId}
+        AND role = 'BOSS'
+        AND status = 'APPROVED'
+    </select>
+
+</mapper> 

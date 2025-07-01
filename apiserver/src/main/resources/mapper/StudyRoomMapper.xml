@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.koreait.apiserver.dao.StudyRoomDao">
+
+    <resultMap id="StudyRoomResultMap" type="com.koreait.apiserver.entity.StudyRoom">
+        <id property="studyRoomId" column="study_room_id"/>
+        <result property="roomId" column="room_id"/>
+        <result property="bossId" column="boss_id"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="education" column="education"/>
+        <result property="department" column="department"/>
+        <result property="region" column="region"/>
+        <result property="district" column="district"/>
+        <result property="capacity" column="capacity"/>
+        <result property="currentMembers" column="current_members"/>
+        <result property="time" column="time"/>
+        <result property="thumbnail" column="thumbnail"/>
+        <result property="isPublic" column="is_public"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="bossNickname" column="boss_nickname"/>
+        <result property="bossProfileImage" column="boss_profile_image"/>
+    </resultMap>
+
+    <insert id="insertStudyRoom" parameterType="com.koreait.apiserver.entity.StudyRoom" useGeneratedKeys="true" keyProperty="studyRoomId">
+        INSERT INTO studyroom (
+            room_id, boss_id, title, description, education, department, 
+            region, district, capacity, current_members, time, thumbnail, 
+            is_public, created_at
+        ) VALUES (
+            #{roomId}, #{bossId}, #{title}, #{description}, #{education}, #{department},
+            #{region}, #{district}, #{capacity}, #{currentMembers}, #{time}, #{thumbnail},
+            #{isPublic}, NOW()
+        )
+    </insert>
+
+    <select id="findById" resultMap="StudyRoomResultMap">
+        SELECT sr.*, m.nickname as boss_nickname, m.profile_image as boss_profile_image
+        FROM studyroom sr
+        LEFT JOIN members m ON sr.boss_id = m.id
+        WHERE sr.study_room_id = #{studyRoomId}
+    </select>
+
+    <select id="findByRoomId" resultMap="StudyRoomResultMap">
+        SELECT sr.*, m.nickname as boss_nickname, m.profile_image as boss_profile_image
+        FROM studyroom sr
+        LEFT JOIN members m ON sr.boss_id = m.id
+        WHERE sr.room_id = #{roomId}
+    </select>
+
+    <select id="findAll" resultMap="StudyRoomResultMap">
+        SELECT sr.*, m.nickname as boss_nickname, m.profile_image as boss_profile_image
+        FROM studyroom sr
+        LEFT JOIN members m ON sr.boss_id = m.id
+        ORDER BY sr.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="findByBossId" resultMap="StudyRoomResultMap">
+        SELECT sr.*, m.nickname as boss_nickname, m.profile_image as boss_profile_image
+        FROM studyroom sr
+        LEFT JOIN members m ON sr.boss_id = m.id
+        WHERE sr.boss_id = #{bossId}
+        ORDER BY sr.created_at DESC
+    </select>
+
+    <select id="findByDepartment" resultMap="StudyRoomResultMap">
+        SELECT sr.*, m.nickname as boss_nickname, m.profile_image as boss_profile_image
+        FROM studyroom sr
+        LEFT JOIN members m ON sr.boss_id = m.id
+        WHERE sr.department = #{department}
+        ORDER BY sr.created_at DESC
+    </select>
+
+    <select id="findByRegion" resultMap="StudyRoomResultMap">
+        SELECT sr.*, m.nickname as boss_nickname, m.profile_image as boss_profile_image
+        FROM studyroom sr
+        LEFT JOIN members m ON sr.boss_id = m.id
+        WHERE sr.region = #{region}
+        ORDER BY sr.created_at DESC
+    </select>
+
+    <select id="findByTime" resultMap="StudyRoomResultMap">
+        SELECT sr.*, m.nickname as boss_nickname, m.profile_image as boss_profile_image
+        FROM studyroom sr
+        LEFT JOIN members m ON sr.boss_id = m.id
+        WHERE sr.time = #{time}
+        ORDER BY sr.created_at DESC
+    </select>
+
+    <update id="updateStudyRoom" parameterType="com.koreait.apiserver.entity.StudyRoom">
+        UPDATE studyroom 
+        SET title = #{title},
+            description = #{description},
+            education = #{education},
+            department = #{department},
+            region = #{region},
+            district = #{district},
+            capacity = #{capacity},
+            current_members = #{currentMembers},
+            time = #{time},
+            thumbnail = #{thumbnail},
+            is_public = #{isPublic}
+        WHERE study_room_id = #{studyRoomId}
+    </update>
+
+    <update id="incrementCurrentMembers">
+        UPDATE studyroom 
+        SET current_members = current_members + 1
+        WHERE study_room_id = #{studyRoomId}
+    </update>
+
+    <update id="decrementCurrentMembers">
+        UPDATE studyroom 
+        SET current_members = GREATEST(current_members - 1, 0)
+        WHERE study_room_id = #{studyRoomId}
+    </update>
+
+    <delete id="deleteStudyRoom">
+        DELETE FROM studyroom WHERE study_room_id = #{studyRoomId}
+    </delete>
+
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM studyroom
+    </select>
+
+    <select id="findByUsername" resultMap="StudyRoomResultMap">
+        SELECT sr.*, m.nickname as boss_nickname, m.profile_image as boss_profile_image
+        FROM studyroom sr
+        INNER JOIN members m ON sr.boss_id = m.id
+        WHERE m.userid = #{username}
+        ORDER BY sr.created_at DESC
+    </select>
+
+    <update id="updateRoomId">
+        UPDATE studyroom SET room_id = #{roomId} WHERE study_room_id = #{studyRoomId}
+    </update>
+
+    <!-- front-server 연동을 위한 새로운 쿼리들 -->
+    
+    <!-- 인기 스터디룸 조회 (현재 멤버 수가 많고 최근 생성된 순으로) -->
+    <select id="findHotStudyRooms" resultMap="StudyRoomResultMap">
+        SELECT sr.*, m.nickname as boss_nickname, m.profile_image as boss_profile_image
+        FROM studyroom sr
+        LEFT JOIN members m ON sr.boss_id = m.id
+        WHERE sr.is_public = true
+        ORDER BY 
+            (sr.current_members * 1.0 / sr.capacity) DESC,  -- 참여율 높은 순
+            sr.current_members DESC,                      -- 현재 멤버 수 많은 순
+            sr.created_at DESC                           -- 최근 생성 순
+        LIMIT #{limit}
+    </select>
+    
+    <!-- 회원이 참여한 스터디룸 조회 (방장이거나 멤버로 참여한 스터디룸) -->
+    <select id="findByMemberId" resultMap="StudyRoomResultMap">
+        SELECT DISTINCT sr.*, m.nickname as boss_nickname, m.profile_image as boss_profile_image
+        FROM studyroom sr
+        LEFT JOIN members m ON sr.boss_id = m.id
+        LEFT JOIN study_room_members srm ON sr.study_room_id = srm.study_room_id
+        WHERE sr.boss_id = #{memberId}
+           OR (srm.member_id = #{memberId} AND srm.status = 'APPROVED')
+        ORDER BY sr.created_at DESC
+    </select>
+
+</mapper> 

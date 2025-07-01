@@ -1,0 +1,12 @@
+@use 'sass:math';
+
+@function remx($px) {
+	@return math.div($px, 10) * 1rem;
+}
+
+@function percent($partial, $total) {
+	@if $total == 0 {
+		@return 0%;
+	}
+	@return math.div($partial, $total) * 100%;
+}

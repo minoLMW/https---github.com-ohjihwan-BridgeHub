@@ -1,0 +1,31 @@
+@use 'sass:color';
+
+$color-primary: #226fb8;
+$color-secondary: color.adjust($color-primary, $lightness: 10%);
+
+$bg-root: #fff;
+
+$line0: #888;
+$line1: #d3d3d3;
+$line2: #e6e6e6;
+$line3: #f0f0f0;
+
+$font1:#121212;
+$font2:#343434;
+$font3:#666;
+$font4:#909090;
+$font5:#f1f1f1;
+
+$padding-x: 2.4rem;
+
+$form-height: 4.8rem;
+$form-radius: 1rem;
+$form-gap: 1rem;
+
+$gray: #f1f1f1;
+$red: #a30b00;
+$disabled : #e6e6e6;
+$neutral :#e6dcdc;
+$navy: #314158;
+$black: #111;
+$green: #00ac47;

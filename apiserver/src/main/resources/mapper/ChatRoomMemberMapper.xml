@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.koreait.apiserver.dao.ChatRoomMemberDao">
+
+    <resultMap id="ChatRoomMemberResultMap" type="com.koreait.apiserver.entity.ChatRoomMember">
+        <id property="roomId" column="room_id"/>
+        <id property="memberId" column="member_id"/>
+        <result property="joinedAt" column="joined_at"/>
+        <result property="isAdmin" column="is_admin"/>
+    </resultMap>
+
+    <insert id="insertChatRoomMember" parameterType="com.koreait.apiserver.entity.ChatRoomMember">
+        INSERT INTO ChatRoomMember (room_id, member_id, joined_at, is_admin)
+        VALUES (#{roomId}, #{memberId}, NOW(), #{isAdmin})
+    </insert>
+
+    <select id="findByRoomId" resultMap="ChatRoomMemberResultMap">
+        SELECT * FROM ChatRoomMember WHERE room_id = #{roomId}
+    </select>
+
+    <select id="findByMemberId" resultMap="ChatRoomMemberResultMap">
+        SELECT * FROM ChatRoomMember WHERE member_id = #{memberId}
+    </select>
+
+    <select id="findByRoomIdAndMemberId" resultMap="ChatRoomMemberResultMap">
+        SELECT * FROM ChatRoomMember WHERE room_id = #{roomId} AND member_id = #{memberId}
+    </select>
+
+    <select id="findAdminsByRoomId" resultMap="ChatRoomMemberResultMap">
+        SELECT * FROM ChatRoomMember WHERE room_id = #{roomId} AND is_admin = true
+    </select>
+
+    <select id="countMembersByRoomId" resultType="int">
+        SELECT COUNT(*) FROM ChatRoomMember WHERE room_id = #{roomId}
+    </select>
+
+    <update id="updateAdminStatus">
+        UPDATE ChatRoomMember 
+        SET is_admin = #{isAdmin}
+        WHERE room_id = #{roomId} AND member_id = #{memberId}
+    </update>
+
+    <delete id="deleteChatRoomMember">
+        DELETE FROM ChatRoomMember WHERE room_id = #{roomId} AND member_id = #{memberId}
+    </delete>
+
+    <delete id="deleteByRoomId">
+        DELETE FROM ChatRoomMember WHERE room_id = #{roomId}
+    </delete>
+
+    <delete id="deleteByMemberId">
+        DELETE FROM ChatRoomMember WHERE member_id = #{memberId}
+    </delete>
+
+</mapper> 

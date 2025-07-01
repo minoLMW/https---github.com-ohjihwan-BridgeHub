@@ -1,0 +1,69 @@
+@use 'variables' as *;
+@use "sass:list";
+
+// Header Button
+@mixin header-button-style {
+	width:2.4rem;
+	height:2.4rem;
+	cursor:pointer;
+}
+
+// Flex Center
+@mixin flex-center {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+// Absolute Center (부모 relative 필수)
+@mixin absolute-center {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+// 텍스트 한 줄 말줄임 처리
+@mixin ellipsis {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+// 메인 버튼 스타일
+@mixin button-base {
+	flex: 1;
+	width:100%;
+	height:5.2rem;
+	padding:0 1.2rem;
+	border: none;
+	border-radius: $form-radius;
+	background: $color-primary;
+	color: $bg-root;
+	font-weight:bold;
+	font-size: 1.8rem;
+	cursor: pointer;
+
+	&:active {
+		background: $color-secondary;
+	}
+
+	&:disabled {
+		background-color:$disabled;
+		cursor:no-drop;
+	}
+}
+
+// 텍스트 버튼
+@mixin text-button {
+	border: none;
+	background-color: transparent;
+	color: $font1;
+	font-weight: normal;
+	font-size: 1.4rem;;
+	text-decoration: underline;
+		
+	&:active {
+		background-color: transparent;
+	}
+}

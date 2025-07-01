@@ -1,0 +1,108 @@
+.member-manage {
+  padding: 32px 24px;
+  background: #f8f9fa;
+  min-height: 100vh;
+
+  .member-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 24px;
+    background: white;
+    padding: 20px 24px 10px 24px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(106, 108, 255, 0.06);
+
+    h2 {
+      margin: 0;
+      color: #6a6cff;
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .search-box {
+      .search-input {
+        width: 220px;
+        padding: 10px 16px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 15px;
+        transition: border-color 0.2s;
+        &:focus {
+          outline: none;
+          border-color: #6a6cff;
+          box-shadow: 0 0 0 2px #6a6cff22;
+        }
+        &::placeholder {
+          color: #b0b0b0;
+        }
+      }
+    }
+  }
+
+  .member-table-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(160, 132, 232, 0.08);
+    padding: 24px;
+    overflow-x: auto;
+    min-width: 900px;
+    .MuiDataGrid-root {
+      background: #fff;
+      border-radius: 12px;
+      font-size: 15px;
+    }
+
+    .member-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
+      th, td {
+        padding: 14px 10px;
+        text-align: left;
+        border-bottom: 1px solid #f0f0f0;
+      }
+      th {
+        background: #f8f9fa;
+        font-weight: 700;
+        color: #6a6cff;
+        font-size: 16px;
+      }
+      td {
+        color: #333;
+        font-size: 15px;
+        vertical-align: middle;
+      }
+      tr {
+        transition: background 0.15s;
+        &:hover {
+          background: #f3f6ff;
+        }
+      }
+    }
+    .no-data {
+      padding: 40px 0;
+      text-align: center;
+      color: #b0b0b0;
+      font-size: 17px;
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .member-manage {
+    padding: 12px 2px;
+    .member-header {
+      flex-direction: column;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 12px 8px 6px 8px;
+      h2 { font-size: 18px; }
+      .search-box .search-input { width: 140px; font-size: 13px; padding: 7px 10px; }
+    }
+    .member-table-container {
+      padding: 8px;
+      .member-table th, .member-table td { padding: 7px 4px; font-size: 12px; }
+      .no-data { font-size: 13px; }
+    }
+  }
+} 

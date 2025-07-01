@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.koreait.apiserver.dao.ReportDao">
+
+    <resultMap id="ReportResultMap" type="com.koreait.apiserver.entity.Report">
+        <id property="reportId" column="report_id"/>
+        <result property="reporterId" column="reporter_id"/>
+        <result property="reportedUserId" column="reported_user_id"/>
+        <result property="reportType" column="report_type"/>
+        <result property="messageId" column="message_id"/>
+        <result property="roomId" column="room_id"/>
+        <result property="studyRoomId" column="studyRoom_id"/>
+        <result property="reason" column="reason"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="status" column="status"/>
+        <result property="adminComment" column="admin_comment"/>
+        <result property="logFileId" column="log_file_id"/>
+        <result property="logMessageIndex" column="log_message_index"/>
+    </resultMap>
+
+    <insert id="insertReport" parameterType="com.koreait.apiserver.entity.Report" useGeneratedKeys="true" keyProperty="reportId">
+        INSERT INTO Report (reporter_id, reported_user_id, report_type, message_id, room_id, studyRoom_id, reason, created_at, status)
+        VALUES (#{reporterId}, #{reportedUserId}, #{reportType}, #{messageId}, #{roomId}, #{studyRoomId}, #{reason}, NOW(), #{status})
+    </insert>
+
+    <select id="findById" resultMap="ReportResultMap">
+        SELECT * FROM Report WHERE report_id = #{reportId}
+    </select>
+
+    <select id="findAll" resultMap="ReportResultMap">
+        SELECT * FROM Report ORDER BY created_at DESC
+    </select>
+
+    <select id="findByReporterId" resultMap="ReportResultMap">
+        SELECT * FROM Report WHERE reporter_id = #{reporterId} ORDER BY created_at DESC
+    </select>
+
+    <select id="findByReportedUserId" resultMap="ReportResultMap">
+        SELECT * FROM Report WHERE reported_user_id = #{reportedUserId} ORDER BY created_at DESC
+    </select>
+
+    <select id="findByStatus" resultMap="ReportResultMap">
+        SELECT * FROM Report WHERE status = #{status} ORDER BY created_at DESC
+    </select>
+
+    <select id="findByReportType" resultMap="ReportResultMap">
+        SELECT * FROM Report WHERE report_type = #{reportType} ORDER BY created_at DESC
+    </select>
+
+    <select id="findPendingReports" resultMap="ReportResultMap">
+        SELECT * FROM Report WHERE status = 'PENDING' ORDER BY created_at ASC
+    </select>
+
+    <update id="updateReportStatus">
+        UPDATE Report 
+        SET status = #{status}, 
+            admin_comment = #{adminComment}
+        WHERE report_id = #{reportId}
+    </update>
+
+    <delete id="deleteReport">
+        DELETE FROM Report WHERE report_id = #{reportId}
+    </delete>
+
+    <select id="countByStatus" resultType="int">
+        SELECT COUNT(*) FROM Report WHERE status = #{status}
+    </select>
+
+    <!-- 관리자 기능 추가 -->
+    <select id="findAllWithPaging" resultMap="ReportResultMap">
+        SELECT * FROM Report 
+        ORDER BY created_at DESC 
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="getTotalCount" resultType="int">
+        SELECT COUNT(*) FROM Report
+    </select>
+
+    <select id="findRecentReports" resultType="com.koreait.apiserver.dto.ReportDTO">
+        SELECT * FROM report ORDER BY created_at DESC LIMIT #{limit}
+    </select>
+
+    <select id="countByReportType" resultType="map">
+        SELECT reason, COUNT(*) as value FROM report GROUP BY reason
+    </select>
+
+</mapper> 

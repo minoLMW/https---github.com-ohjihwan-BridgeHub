@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.koreait.apiserver.dao.MessageDao">
+
+    <resultMap id="MessageResultMap" type="com.koreait.apiserver.entity.Message">
+        <id property="messageId" column="message_id"/>
+        <result property="roomId" column="room_id"/>
+        <result property="senderId" column="sender_id"/>
+        <result property="content" column="content"/>
+        <result property="messageType" column="message_type"/>
+        <result property="sentAt" column="sent_at"/>
+        <result property="isDeleted" column="is_deleted"/>
+        <result property="isLogged" column="is_logged"/>
+        <result property="logFileId" column="log_file_id"/>
+        <result property="logMessageIndex" column="log_message_index"/>
+        <result property="senderNickname" column="sender_nickname"/>
+        <result property="senderProfileImage" column="sender_profile_image"/>
+    </resultMap>
+
+    <insert id="insertMessage" parameterType="com.koreait.apiserver.entity.Message" useGeneratedKeys="true" keyProperty="messageId">
+        INSERT INTO Message (room_id, sender_id, content, message_type, sent_at, is_deleted, is_logged, log_file_id)
+        VALUES (#{roomId}, #{senderId}, #{content}, #{messageType}, NOW(), #{isDeleted}, #{isLogged}, #{logFileId})
+    </insert>
+
+    <select id="findById" resultMap="MessageResultMap">
+        SELECT * FROM Message WHERE message_id = #{messageId} AND is_deleted = false
+    </select>
+
+    <!-- 채팅 히스토리 조회 (페이징 포함) -->
+    <select id="findChatHistory" resultMap="MessageResultMap">
+        SELECT m.*, 
+               mem.nickname as sender_nickname,
+               mem.profile_image as sender_profile_image
+        FROM Message m
+        LEFT JOIN members mem ON m.sender_id = mem.id
+        WHERE m.room_id = #{roomId} 
+          AND m.is_deleted = false
+        <if test="beforeDate != null">
+          AND m.sent_at &lt; #{beforeDate}
+        </if>
+        ORDER BY m.sent_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="findByRoomId" resultMap="MessageResultMap">
+        SELECT m.*, 
+               mem.nickname as sender_nickname,
+               mem.profile_image as sender_profile_image
+        FROM Message m
+        LEFT JOIN members mem ON m.sender_id = mem.id
+        WHERE m.room_id = #{roomId} AND m.is_deleted = false 
+        ORDER BY m.sent_at ASC
+    </select>
+
+    <select id="findBySenderId" resultMap="MessageResultMap">
+        SELECT * FROM Message WHERE sender_id = #{senderId} AND is_deleted = false ORDER BY sent_at DESC
+    </select>
+
+    <select id="findRecentMessages" resultMap="MessageResultMap">
+        SELECT m.*, 
+               mem.nickname as sender_nickname,
+               mem.profile_image as sender_profile_image
+        FROM Message m
+        LEFT JOIN members mem ON m.sender_id = mem.id
+        WHERE m.room_id = #{roomId} AND m.is_deleted = false 
+        ORDER BY m.sent_at DESC 
+        LIMIT #{limit}
+    </select>
+
+    <!-- 채팅방 메시지 개수 조회 -->
+    <select id="countByRoomId" resultType="int">
+        SELECT COUNT(*) FROM Message 
+        WHERE room_id = #{roomId} AND is_deleted = false
+    </select>
+
+    <update id="updateMessage" parameterType="com.koreait.apiserver.entity.Message">
+        UPDATE Message 
+        SET content = #{content}, 
+            message_type = #{messageType},
+            is_deleted = #{isDeleted},
+            is_logged = #{isLogged},
+            log_file_id = #{logFileId}
+        WHERE message_id = #{messageId}
+    </update>
+
+    <update id="softDeleteMessage">
+        UPDATE Message SET is_deleted = true WHERE message_id = #{messageId}
+    </update>
+
+    <delete id="deleteMessage">
+        DELETE FROM Message WHERE message_id = #{messageId}
+    </delete>
+
+    <delete id="deleteByRoomId">
+        DELETE FROM Message WHERE room_id = #{roomId}
+    </delete>
+
+    <!-- 오래된 임시 메시지 삭제 (로그 파일에 저장된 메시지) -->
+    <delete id="deleteOldTempMessages">
+        DELETE FROM Message 
+        WHERE sent_at &lt; #{cutoffDate} 
+          AND is_logged = true
+          AND is_deleted = false
+    </delete>
+
+</mapper> 

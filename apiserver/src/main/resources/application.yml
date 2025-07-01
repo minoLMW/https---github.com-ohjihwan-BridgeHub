@@ -1,0 +1,94 @@
+spring:
+  application:
+    name: thebridgehub
+    
+  datasource:
+    url: jdbc:mysql://localhost:3306/thebridgehub?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  # 이메일 설정 (Gmail)
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: bglyk83@gmail.com
+    password: ipbeaplyaqbqmdsy
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: false
+          timeout: 5000
+          connectiontimeout: 5000
+          writetimeout: 5000
+        transport:
+          protocol: smtp
+        debug: false
+
+  # 파일 업로드 설정
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# MyBatis 설정
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.koreait.apiserver.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# JWT 설정
+jwt:
+  secret: 5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437
+  expiration: 86400000  # 24시간 (밀리초)
+
+# 서버 설정
+server:
+  port: 7100
+
+# 파일 업로드 설정
+file:
+  upload:
+    path: uploads
+  max:
+    size: 10485760
+  allowed:
+    types: jpg,jpeg,png,gif,pdf,doc,docx,txt,zip,rar
+
+# 채팅 로그 설정
+chat:
+  log:
+    path: ./chat-logs
+    cleanup:
+      days: 1
+    max-file-size: 104857600
+  cleanup:
+    cron: "0 0 2 * * ?"
+
+# 로깅 설정
+logging:
+  level:
+    com.koreait.apiserver: DEBUG
+    org.springframework.web: INFO
+    org.mybatis: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/thebridgehub.log
+    max-size: 10MB
+    max-history: 30

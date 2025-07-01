@@ -1,0 +1,102 @@
+[
+	{
+		"id": "hot001",
+		"title": "풀스택 부트캠프 모집",
+		"description": "안녕하세요. 어쩌고 저쩌고 입니다. 저희는 어쩌고 저쩌고 어쩌고 저쩌고 합니다. 빨리 신청하세요.안녕하세요. 어쩌고 저쩌고",
+		"region": "서울",
+		"time": "오전",
+		"capacity": 6,
+		"currentMembers": 5,
+		"thumbnail": "thumbnail-room1.jpg"
+	},
+	{
+		"id": "hot002",
+		"title": "JS 알고리즘 정복반",
+		"description": "매일 알고리즘 풀며 실력 향상!",
+		"region": "부산",
+		"time": "오후",
+		"capacity": 5,
+		"currentMembers": 3,
+		"thumbnail": "thumbnail-room1.jpg"
+	},
+	{
+		"id": "hot003",
+		"title": "🌟 야간 리액트 집중반",
+		"description": "야간에 집중적으로 리액트를 공부하는 팀입니다.",
+		"region": "대구",
+		"time": "야간",
+		"capacity": 4,
+		"currentMembers": 4,
+		"thumbnail": "thumbnail-room2.jpg"
+	},
+	{
+		"id": "hot004",
+		"title": "⚠️ 초급 탈출 파이썬",
+		"description": "초보 탈출을 위한 파이썬 스터디! @초급 @기초",
+		"region": "광주",
+		"time": "저녁",
+		"capacity": 7,
+		"currentMembers": 2,
+		"thumbnail": "thumbnail-room3.jpg"
+	},
+	{
+		"id": "hot005",
+		"title": "한글 테스트",
+		"description": "한글만으로 작성된 설명입니다. 간단한 테스트용입니다.",
+		"region": "인천",
+		"time": "오전",
+		"capacity": 3,
+		"currentMembers": 1,
+		"thumbnail": "thumbnail-room4.jpg"
+	},
+	{
+		"id": "hot006",
+		"title": "빈 설명 필드 테스트",
+		"description": "",
+		"region": "서울",
+		"time": "오후",
+		"capacity": 6,
+		"currentMembers": 3,
+		"thumbnail": "thumbnail-room5.jpg"
+	},
+	{
+		"id": "hot007",
+		"title": "🔥 Web 기본부터 탄탄하게",
+		"description": "HTML, CSS, JS 기본을 튼튼히! 🚀",
+		"region": "부산",
+		"time": "오전",
+		"capacity": 5,
+		"currentMembers": 5,
+		"thumbnail": "thumbnail-room6.jpg"
+	},
+	{
+		"id": "hot008",
+		"title": "길고 긴 제목 테스트 길고 긴 제목 테스트 길고 긴 제목 테스트",
+		"description": "길게 써야만 보이는 현상을 테스트합니다. 화면이 어떻게 처리되는지 보자.",
+		"region": "대전",
+		"time": "저녁",
+		"capacity": 8,
+		"currentMembers": 4,
+		"thumbnail": "thumbnail-room7.jpg"
+	},
+	{
+		"id": "hot009",
+		"title": "일일 스터디",
+		"description": "오늘만 참여하는 번개 스터디입니다. 즉시 모집 완료!",
+		"region": "울산",
+		"time": "오후",
+		"capacity": 2,
+		"currentMembers": 2,
+		"thumbnail": "thumbnail-room8.jpg"
+	},
+	{
+		"id": "hot010",
+		"title": "🧪 특수 문자 테스트용",
+		"description": "<div>이거 HTML로 해석되면 안 돼요!</div>",
+		"region": "세종",
+		"time": "오전",
+		"capacity": 5,
+		"currentMembers": 1,
+		"thumbnail": "thumbnail-chr1.jpg"
+	}
+]

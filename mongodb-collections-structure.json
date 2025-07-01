@@ -1,0 +1,475 @@
+{
+  "database": "thebridgehub",
+  "description": "TheBridgeHub Socket Server MongoDB Collections Structure",
+  "version": "1.0.0",
+  "lastUpdated": "2024-12-18",
+  
+  "collections": {
+    "messages": {
+      "description": "채팅 메시지 저장 컬렉션",
+      "purpose": "실시간 채팅 메시지, 파일, 링크 등을 저장",
+      "fields": {
+        "studyId": {
+          "type": "number|string",
+          "required": true,
+          "description": "스터디룸 ID (필수)"
+        },
+        "senderId": {
+          "type": "number|string", 
+          "required": true,
+          "description": "발신자 ID (필수)"
+        },
+        "senderName": {
+          "type": "string",
+          "required": false,
+          "description": "발신자 이름"
+        },
+        "senderNickname": {
+          "type": "string",
+          "required": false,
+          "description": "발신자 닉네임"
+        },
+        "content": {
+          "type": "string",
+          "required": true,
+          "description": "메시지 내용 (필수)"
+        },
+        "messageType": {
+          "type": "enum",
+          "values": ["TEXT", "FILE", "IMAGE", "LINK", "SYSTEM"],
+          "required": false,
+          "description": "메시지 타입"
+        },
+        "fileInfo": {
+          "type": "object",
+          "required": false,
+          "description": "파일 정보 (파일 메시지인 경우)",
+          "properties": {
+            "fileName": "string - 파일명",
+            "fileUrl": "string - 파일 URL", 
+            "fileSize": "number - 파일 크기(바이트)",
+            "mimeType": "string - MIME 타입"
+          }
+        },
+        "linkPreviews": {
+          "type": "array",
+          "required": false,
+          "description": "링크 미리보기 정보 배열",
+          "items": {
+            "url": "string - 링크 URL",
+            "title": "string - 페이지 제목",
+            "description": "string - 페이지 설명",
+            "image": "string - 미리보기 이미지 URL"
+          }
+        },
+        "timestamp": {
+          "type": "date",
+          "required": true,
+          "description": "메시지 전송 시간 (필수)"
+        },
+        "createdAt": {
+          "type": "date",
+          "required": false,
+          "description": "생성 시간"
+        },
+        "updatedAt": {
+          "type": "date",
+          "required": false,
+          "description": "수정 시간"
+        },
+        "isDeleted": {
+          "type": "boolean",
+          "required": false,
+          "description": "삭제 여부 (논리 삭제)"
+        }
+      },
+      "indexes": [
+        {
+          "fields": { "studyId": 1, "timestamp": -1 },
+          "description": "스터디별 메시지 최신순 조회"
+        },
+        {
+          "fields": { "senderId": 1, "timestamp": -1 },
+          "description": "발신자별 메시지 최신순 조회"
+        },
+        {
+          "fields": { "timestamp": -1 },
+          "description": "전체 메시지 최신순 조회"
+        },
+        {
+          "fields": { "isDeleted": 1 },
+          "description": "삭제된 메시지 필터링 최적화"
+        }
+      ]
+    },
+    
+    "studyRooms": {
+      "description": "스터디룸 상태 관리 컬렉션",
+      "purpose": "실시간 스터디룸 상태, 멤버 수, 마지막 활동 등을 추적",
+      "fields": {
+        "studyId": {
+          "type": "number|string",
+          "required": true,
+          "description": "스터디룸 ID (필수)"
+        },
+        "studyTitle": {
+          "type": "string",
+          "required": false,
+          "description": "스터디 제목"
+        },
+        "currentMembers": {
+          "type": "array",
+          "required": false,
+          "description": "현재 접속중인 멤버 목록"
+        },
+        "memberCount": {
+          "type": "number",
+          "required": false,
+          "description": "현재 멤버 수"
+        },
+        "lastMessage": {
+          "type": "object",
+          "required": false,
+          "description": "마지막 메시지 정보"
+        },
+        "lastActivity": {
+          "type": "date",
+          "required": false,
+          "description": "마지막 활동 시간"
+        },
+        "createdAt": {
+          "type": "date",
+          "required": false,
+          "description": "생성 시간"
+        },
+        "updatedAt": {
+          "type": "date",
+          "required": false,
+          "description": "수정 시간"
+        }
+      },
+      "indexes": [
+        {
+          "fields": { "studyId": 1 },
+          "description": "스터디룸 ID로 빠른 조회"
+        },
+        {
+          "fields": { "lastActivity": -1 },
+          "description": "최근 활동순 정렬"
+        },
+        {
+          "fields": { "memberCount": -1 },
+          "description": "멤버 수 많은 순 정렬"
+        }
+      ]
+    },
+    
+    "chatSessions": {
+      "description": "채팅 세션 관리 컬렉션",
+      "purpose": "사용자의 채팅방 접속 상태와 세션 정보를 관리",
+      "fields": {
+        "studyId": {
+          "type": "number|string",
+          "required": true,
+          "description": "스터디룸 ID (필수)"
+        },
+        "userId": {
+          "type": "number|string",
+          "required": true,
+          "description": "사용자 ID (필수)"
+        },
+        "userName": {
+          "type": "string",
+          "required": false,
+          "description": "사용자 실명"
+        },
+        "userNickname": {
+          "type": "string",
+          "required": false,
+          "description": "사용자 닉네임"
+        },
+        "socketId": {
+          "type": "string",
+          "required": false,
+          "description": "Socket.IO 연결 ID"
+        },
+        "status": {
+          "type": "enum",
+          "values": ["ACTIVE", "INACTIVE"],
+          "required": true,
+          "description": "세션 상태 (필수)"
+        },
+        "userAgent": {
+          "type": "string",
+          "required": false,
+          "description": "사용자 브라우저/앱 정보"
+        },
+        "ipAddress": {
+          "type": "string",
+          "required": false,
+          "description": "접속 IP 주소"
+        },
+        "joinedAt": {
+          "type": "date",
+          "required": false,
+          "description": "채팅방 입장 시간"
+        },
+        "lastActivity": {
+          "type": "date",
+          "required": false,
+          "description": "마지막 활동 시간"
+        },
+        "createdAt": {
+          "type": "date",
+          "required": false,
+          "description": "세션 생성 시간"
+        },
+        "updatedAt": {
+          "type": "date",
+          "required": false,
+          "description": "세션 수정 시간"
+        }
+      },
+      "indexes": [
+        {
+          "fields": { "studyId": 1, "userId": 1 },
+          "description": "스터디별 사용자 세션 조회"
+        },
+        {
+          "fields": { "socketId": 1 },
+          "description": "Socket ID로 세션 찾기"
+        },
+        {
+          "fields": { "status": 1 },
+          "description": "활성 세션만 필터링"
+        },
+        {
+          "fields": { "lastActivity": -1 },
+          "description": "최근 활동순 정렬"
+        }
+      ]
+    },
+    
+    "systemLogs": {
+      "description": "시스템 로그 저장 컬렉션",
+      "purpose": "Socket 서버의 모든 활동과 에러를 기록",
+      "fields": {
+        "level": {
+          "type": "string",
+          "required": true,
+          "description": "로그 레벨 (INFO, WARN, ERROR, DEBUG) (필수)"
+        },
+        "category": {
+          "type": "string",
+          "required": false,
+          "description": "로그 카테고리 (SOCKET, MESSAGE, FILE, ERROR 등)"
+        },
+        "studyId": {
+          "type": "number|string",
+          "required": false,
+          "description": "관련 스터디룸 ID"
+        },
+        "userId": {
+          "type": "number|string",
+          "required": false,
+          "description": "관련 사용자 ID"
+        },
+        "message": {
+          "type": "string",
+          "required": true,
+          "description": "로그 메시지 내용 (필수)"
+        },
+        "details": {
+          "type": "object",
+          "required": false,
+          "description": "추가 상세 정보 (JSON 형태)"
+        },
+        "timestamp": {
+          "type": "date",
+          "required": false,
+          "description": "로그 발생 시간"
+        },
+        "createdAt": {
+          "type": "date",
+          "required": false,
+          "description": "로그 저장 시간"
+        }
+      },
+      "indexes": [
+        {
+          "fields": { "timestamp": -1 },
+          "description": "로그 시간 역순 조회"
+        },
+        {
+          "fields": { "level": 1, "timestamp": -1 },
+          "description": "로그 레벨별 시간순 조회"
+        },
+        {
+          "fields": { "category": 1, "timestamp": -1 },
+          "description": "카테고리별 로그 조회"
+        },
+        {
+          "fields": { "studyId": 1, "timestamp": -1 },
+          "description": "스터디별 로그 추적"
+        },
+        {
+          "fields": { "userId": 1, "timestamp": -1 },
+          "description": "사용자별 로그 추적"
+        }
+      ]
+    },
+    
+    "fileUploads": {
+      "description": "파일 업로드 관리 컬렉션",
+      "purpose": "채팅에서 업로드된 파일의 메타데이터와 상태를 관리",
+      "fields": {
+        "studyId": {
+          "type": "number|string",
+          "required": true,
+          "description": "스터디룸 ID (필수)"
+        },
+        "senderId": {
+          "type": "number|string",
+          "required": true,
+          "description": "파일 업로드한 사용자 ID (필수)"
+        },
+        "senderName": {
+          "type": "string",
+          "required": false,
+          "description": "업로드한 사용자 이름"
+        },
+        "fileName": {
+          "type": "string",
+          "required": true,
+          "description": "서버에 저장된 파일명 (필수)"
+        },
+        "originalFileName": {
+          "type": "string",
+          "required": false,
+          "description": "사용자가 업로드한 원본 파일명"
+        },
+        "fileUrl": {
+          "type": "string",
+          "required": true,
+          "description": "파일 다운로드 URL (필수)"
+        },
+        "fileSize": {
+          "type": "number",
+          "required": true,
+          "description": "파일 크기 (바이트 단위) (필수)"
+        },
+        "mimeType": {
+          "type": "string",
+          "required": false,
+          "description": "파일 MIME 타입 (image/jpeg, application/pdf 등)"
+        },
+        "uploadStatus": {
+          "type": "enum",
+          "values": ["PENDING", "UPLOADING", "COMPLETED", "FAILED"],
+          "required": false,
+          "description": "업로드 진행 상태"
+        },
+        "uploadedAt": {
+          "type": "date",
+          "required": false,
+          "description": "업로드 완료 시간"
+        },
+        "createdAt": {
+          "type": "date",
+          "required": false,
+          "description": "레코드 생성 시간"
+        },
+        "updatedAt": {
+          "type": "date",
+          "required": false,
+          "description": "레코드 수정 시간"
+        }
+      },
+      "indexes": [
+        {
+          "fields": { "studyId": 1, "uploadedAt": -1 },
+          "description": "스터디별 파일 최신순 조회"
+        },
+        {
+          "fields": { "senderId": 1, "uploadedAt": -1 },
+          "description": "사용자별 업로드 파일 조회"
+        },
+        {
+          "fields": { "uploadStatus": 1 },
+          "description": "업로드 상태별 필터링"
+        },
+        {
+          "fields": { "uploadedAt": -1 },
+          "description": "전체 파일 최신순 조회"
+        }
+      ]
+    }
+  },
+  
+  "dataFlow": {
+    "description": "MongoDB 컬렉션간 데이터 흐름",
+    "steps": {
+      "1_connection": {
+        "action": "사용자 채팅방 접속",
+        "collection": "chatSessions",
+        "operation": "INSERT/UPDATE",
+        "details": "사용자 세션 정보 저장, 상태를 ACTIVE로 설정"
+      },
+      "2_messaging": {
+        "action": "메시지 전송",
+        "collection": "messages",
+        "operation": "INSERT",
+        "details": "메시지 내용, 발신자 정보, 타임스탬프 저장"
+      },
+      "3_file_upload": {
+        "action": "파일 업로드",
+        "collection": "fileUploads",
+        "operation": "INSERT/UPDATE",
+        "details": "파일 메타데이터 저장, 업로드 상태 관리"
+      },
+      "4_study_update": {
+        "action": "스터디룸 상태 업데이트",
+        "collection": "studyRooms",
+        "operation": "UPDATE",
+        "details": "마지막 메시지, 활동 시간, 멤버 수 업데이트"
+      },
+      "5_logging": {
+        "action": "시스템 로그 기록",
+        "collection": "systemLogs",
+        "operation": "INSERT",
+        "details": "모든 중요한 활동과 에러를 로그로 기록"
+      },
+      "6_disconnection": {
+        "action": "사용자 연결 해제",
+        "collection": "chatSessions",
+        "operation": "UPDATE",
+        "details": "세션 상태를 INACTIVE로 변경"
+      }
+    }
+  },
+  
+  "summary": {
+    "totalCollections": 5,
+    "totalIndexes": 20,
+    "primaryPurpose": "Socket.IO 기반 실시간 채팅 시스템의 데이터 저장",
+    "keyFeatures": [
+      "실시간 메시지 송수신 및 저장",
+      "파일 업로드 및 공유 관리",
+      "링크 미리보기 지원",
+      "사용자 세션 상태 추적",
+      "포괄적인 시스템 로깅",
+      "스터디룸 활동 모니터링"
+    ],
+    "scalability": {
+      "messages": "메시지 수가 많아질 수 있으므로 timestamp 기반 파티셔닝 고려",
+      "systemLogs": "로그 데이터가 빠르게 증가하므로 주기적 아카이빙 필요",
+      "chatSessions": "활성 세션만 유지하고 비활성 세션은 주기적 정리"
+    },
+    "performance_tips": [
+      "자주 조회되는 필드에 적절한 인덱스 설정 완료",
+      "복합 인덱스를 통한 쿼리 최적화",
+      "날짜 기반 인덱스로 시간순 정렬 성능 향상",
+      "삭제된 데이터 필터링을 위한 인덱스 설정"
+    ]
+  }
+} 
