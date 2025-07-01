@@ -8,7 +8,7 @@ import BoardList from '@page/board'
 import BoardWrite from '@components/BoardWrite'
 import List from '@page/list'
 import Search from '@page/Search'
-import ClientRoom from '@components/rtc/ClientRoom'
+import ClientRoom from '@components/ClientRoom'
 
 function App() {
 	const [showIntro, setShowIntro] = useState(false);

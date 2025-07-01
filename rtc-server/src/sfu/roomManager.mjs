@@ -1,9 +1,9 @@
-// src/sfu/roomManager.mjs
 
 import { v4 as uuidv4 } from 'uuid'
 import dotenv from 'dotenv'
 dotenv.config()
 
+// RoomManager 클래스는 방 관리 기능을 제공합니다.
 
 class RoomManager {
   constructor() {
@@ -75,5 +75,4 @@ getHost(roomId) {
 }
 
 
-
-export const roomManager = new RoomManager()
+export default new RoomManager()

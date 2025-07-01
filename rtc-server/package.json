@@ -4,8 +4,8 @@
     "description": "WebRTC SFU + REST API + socket signaling server",
     "type": "module",
     "scripts": {
-        "start": "node src/server.mjs",
-        "dev": "nodemon --watch src --ext mjs,json --exec \"node src/server.mjs\""
+    "start": "node src/server.mjs",
+    "dev": "nodemon --watch . --ext mjs,json --exec \"node src/server.mjs\""
     },
     "dependencies": {
         "express": "^4.18.2",

@@ -1,47 +1,63 @@
-import { roomManager } from '../sfu/roomManager.mjs'
+import  RoomManager  from '../sfu/roomManager.mjs';
 
-export const handleConnection = (socket) => {
+export const handleSocketEvents = (io, socket) => {
   socket.on('join', ({ roomId, nickname }) => {
-    // 방이 없으면 생성 후 방장 지정
-    if (!roomManager.getRoom(roomId)) {
-      roomManager.createRoom(roomId)
-      roomManager.setHost(roomId, socket.id)
+    if (!RoomManager.getRoom(roomId)) {
+      RoomManager.createRoom(roomId);
+      RoomManager.setHost(roomId, socket.id);
     }
 
-    const success = roomManager.joinRoom(roomId, socket, nickname)
+    const success = RoomManager.joinRoom(roomId, socket, nickname);
     if (!success) {
-      socket.emit('room-full')
-      return
+      socket.emit('room-full');
+      return;
     }
 
-    const peers = roomManager.getPeers(roomId)
-    socket.emit('peer-list', peers)
+    socket.data.roomId = roomId;
+    socket.data.nickname = nickname;
 
-    // 나를 제외한 다른 참가자에게 새 참가자 알림
+    // 본인에게 현재 peer 목록 전송
+    const peers = RoomManager.getPeers(roomId);
+    socket.emit('peer-list', peers);
+
+    // 다른 사용자에게 새 유저 참여 알림
     peers.forEach(({ id }) => {
       if (id !== socket.id) {
-        const peerSocket = roomManager.getSocketById(roomId, id)
-        peerSocket?.emit('peer-joined', { id: socket.id, nickname })
+        const peerSocket = RoomManager.getSocketById(roomId, id);
+        peerSocket?.emit('peer-joined', { id: socket.id, nickname });
       }
-    })
+    });
+  });
 
-    // 연결 종료 처리
-    socket.on('disconnect', () => {
-      const hostId = roomManager.getHost(roomId)
+  socket.on('rtc-message', (msg) => {
+    const { roomId, event, data } = JSON.parse(msg);
+    socket.to(roomId).emit('rtc-message', JSON.stringify({
+      event,
+      data,
+      from: socket.id,
+    }));
+  });
 
-      roomManager.leaveRoom(roomId, socket.id)
+  socket.on('chat-message', (msg) => {
+    const { roomId, ...rest } = JSON.parse(msg);
+    io.to(roomId).emit('chat-message', JSON.stringify(rest));
+  });
 
-      // 방장이 나갔으면 방 삭제
-      if (socket.id === hostId) {
-        roomManager.deleteRoom(roomId)
-      } else {
-        // 다른 유저에게 나간 사람 알림
-        const remainingPeers = roomManager.getPeers(roomId)
-        remainingPeers.forEach(({ id }) => {
-          const peerSocket = roomManager.getSocketById(roomId, id)
-          peerSocket?.emit('peer-left', socket.id)
-        })
-      }
-    })
-  })
-}
+  socket.on('disconnect', () => {
+    const { roomId } = socket.data;
+    if (!roomId) return;
+
+    const hostId = RoomManager.getHost(roomId);
+    RoomManager.leaveRoom(roomId, socket.id);
+
+    if (socket.id === hostId) {
+      RoomManager.deleteRoom(roomId);
+    } else {
+      const peers = RoomManager.getPeers(roomId);
+      peers.forEach(({ id }) => {
+        const peerSocket = RoomManager.getSocketById(roomId, id);
+        peerSocket?.emit('peer-left', { id: socket.id });
+      });
+    }
+  });
+};
